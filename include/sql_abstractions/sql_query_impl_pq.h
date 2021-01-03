@@ -16,7 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 #pragma once
-
+#ifdef USE_POSTGRES
 #include "sql_abstractions/sql_variant.h"
 #include "sql_abstractions/sql_error.h"
 #include "sql_abstractions/sql_query_impl_base.h"
@@ -65,3 +65,4 @@ private:
     void ResetLocalData();
 };
 }
+#endif

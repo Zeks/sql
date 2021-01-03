@@ -15,9 +15,9 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
+#ifdef USE_POSTGRES
 #include "sql_abstractions/sql_database_impl_pq.h"
 #include "sql_abstractions/sql_error.h"
-
 #include "fmt/format.h"
 #include "logger/QsLog.h"
 
@@ -175,3 +175,4 @@ std::shared_ptr<pqxx::connection> DatabaseImplPq::getConnection()
 }
 
 }
+#endif

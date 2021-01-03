@@ -15,6 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
+#ifdef USE_POSTGRES
 #include "sql_abstractions/sql_query_impl_pq.h"
 #include "sql_abstractions/sql_database_impl_pq.h"
 #include "sql_abstractions/sql_error.h"
@@ -447,3 +448,4 @@ std::string QueryImplPq::implType() const
 }
 
 }
+#endif

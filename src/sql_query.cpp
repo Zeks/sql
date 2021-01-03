@@ -166,10 +166,12 @@ void Query::instantiateImpl(Database db)
         auto internals = *static_cast<QSqlDatabase*>(db.internalPointer());
         d.reset(new QueryImplSqlite(internals));
     }
+    #ifdef USE_POSTGRES
     else if(db.driverType() == "PQXX"){
         auto internals = static_cast<DatabaseImplPq*>(db.internalPointer())->getShared();
         d.reset(new QueryImplPq(internals));
     }
+    #endif
     else
         d.reset(new QueryImplNull());
 

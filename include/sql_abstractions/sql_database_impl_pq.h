@@ -16,6 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 #pragma once
+#ifdef USE_POSTGRES
 #include "sql_abstractions/sql_database_impl_base.h"
 #include "sql_abstractions/shared_trick.h"
 #include <pqxx/pqxx>
@@ -46,3 +47,4 @@ class DatabaseImplPq : public DatabaseImplBase, public inheritable_enable_shared
 };
 
 }
+#endif

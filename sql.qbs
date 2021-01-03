@@ -24,6 +24,8 @@ Export{
     }
 }
 
+cpp.defines: base.concat(["FMT_HEADER_ONLY", project.usePostgres ? "USE_POSTGRES" : "NO_POSTGRES"])
+
 cpp.includePaths: [
                 "../",
                 "../../",
@@ -31,7 +33,7 @@ cpp.includePaths: [
                 product.sourceDirectory + "/include",
                 product.sourceDirectory + "/../../third_party/fmt/include",
 ]
-cpp.defines: base.concat(["FMT_HEADER_ONLY"])
+
 files: [
         "include/sql_abstractions/shared_trick.h",
         "include/sql_abstractions/sql_connection_token.h",

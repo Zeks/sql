@@ -47,11 +47,13 @@ Database Database::addDatabase(std::string driver, std::string name)
             throw std::runtime_error("database wasn't created properly");
         db.d = impl;
     }
+    #ifdef USE_POSTGRES
     else if(driver == "PQXX")
     {
         auto impl = std::make_shared<DatabaseImplPq>(name);
         db.d = impl;
     }
+    #endif
 
     databases.insert_or_assign(name, db);
     return db;
