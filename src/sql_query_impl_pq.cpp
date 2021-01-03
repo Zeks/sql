@@ -164,7 +164,7 @@ std::optional<std::string> VariantToOptionalString(const Variant& wrapper){
             result = std::to_string(std::get<double>(v));
             break;
         case 7:
-            result =  std::get<QDateTime>(v).toString("yyyy-MM-dd").toStdString();
+            result =  std::get<QDateTime>(v).isValid() ? std::get<QDateTime>(v).toString("yyyy-MM-dd").toStdString() : std::optional<std::string>();
             break;
         case 8:
             result =  std::to_string(std::get<bool>(v));
