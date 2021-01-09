@@ -21,6 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include "sql_abstractions/sql_query_impl_null.h"
 #include "sql_abstractions/sql_database.h"
 #include "sql_abstractions/sql_error.h"
+#include "logger/QsLog.h"
 
 namespace sql {
 static std::unordered_map<std::string, std::string> namedQueries;
@@ -32,22 +33,31 @@ Query::Query(Database db)
 
 Query::Query(std::string query, Database db)
 {
+    //QLOG_INFO() << "creating query: " << query;
     instantiateImpl(db);
     prepare(query);
 }
 
+Query::~Query()
+{
+    //QLOG_INFO() << "finishing query";
+}
+
 bool Query::prepare(const std::string & query)
 {
+    //QLOG_INFO() << "preparing query: " << query;
     return d->prepare(query);
 }
 
 bool Query::prepare(std::string && query)
 {
+    //QLOG_INFO() << "preparing query: " << query;
     return d->prepare(query);
 }
 
 bool Query::prepare(const std::string & name, const std::string & query)
 {
+    //QLOG_INFO() << "preparing query: " << query;
     return d->prepare(name, query);
 }
 

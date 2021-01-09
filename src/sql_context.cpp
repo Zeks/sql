@@ -32,7 +32,7 @@ bool ExecAndCheck(sql::Query& q, bool reportErrors, std::vector<ESqlErrors> expe
         auto it = std::find(expectedErrors.begin(), expectedErrors.end(), error);
         if(it != std::end(expectedErrors))
         {
-            QLOG_WARN() << q.lastError().text();
+            //QLOG_TRACE() << q.lastError().text();
             return true;
         }
         if(reportErrors)

@@ -15,6 +15,7 @@ public:
 
     Query(Database);
     Query(std::string, Database);
+    ~Query();
     bool prepare(const std::string&);
     bool prepare(std::string&&);
     bool prepare(const std::string&, const std::string&);

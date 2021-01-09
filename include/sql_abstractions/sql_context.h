@@ -117,9 +117,18 @@ struct SqlContext
             transaction.finalize();
     }
 
+    void  SetExpectedErrors(std::vector<ESqlErrors> errors){
+        this->expectedErrors = errors;
+    };
+
     DiagnosticSQLResult<ResultType> operator()(bool ignoreUniqueness = false){
         BindValues();
         ExecAndCheck(ignoreUniqueness);
+        return result;
+    }
+    DiagnosticSQLResult<ResultType> operator()(std::vector<ESqlErrors> errors){
+        BindValues();
+        ExecAndCheck(errors);
         return result;
     }
 
@@ -219,6 +228,10 @@ struct SqlContext
     bool ExecAndCheck(bool ignoreUniqueness = false){
         BindValues();
         return result.ExecAndCheck(q, ConvertBoolToError(ignoreUniqueness, {ESqlErrors::se_unique_row_violation}));
+    }
+    bool ExecAndCheck(std::vector<ESqlErrors> expectedErrors){
+        BindValues();
+        return result.ExecAndCheck(q, expectedErrors);
     }
     bool CheckDataAvailability(bool allowEmptyRecords = false){
         return result.CheckDataAvailability(q, allowEmptyRecords);
@@ -495,6 +508,7 @@ struct SqlContext
     Transaction transaction;
     std::vector<QueryBinding> bindValues;
     std::function<void(SqlContext<ResultType>*)> func;
+    std::vector<ESqlErrors> expectedErrors;
 };
 
 
