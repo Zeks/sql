@@ -17,6 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 #include "sql_abstractions/sql_variant.h"
 #include <QUuid>
+#include <stdexcept>
 
 namespace sql{
 template<class> inline constexpr bool always_false_v = false;
