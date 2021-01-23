@@ -47,7 +47,13 @@ public:
     int rowCount() const override;
 
     bool supportsImmediateResultSize() const override;
+
+    #ifdef Q_OS_LINUX
     constexpr bool supportsVectorizedBind() const override;
+    #endif
+    #ifdef Q_OS_WINDOWS
+    bool supportsVectorizedBind() const override;
+    #endif
     Variant value(int) const override;
     Variant value(const std::string &) const override;
     Variant value(std::string &&) const override;

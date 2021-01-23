@@ -152,7 +152,12 @@ bool QueryImplSqlite::supportsImmediateResultSize() const
     return false;
 }
 
+#ifdef Q_OS_LINUX
 constexpr bool QueryImplSqlite::supportsVectorizedBind() const
+#endif
+#ifdef Q_OS_WINDOWS
+bool QueryImplSqlite::supportsVectorizedBind() const
+#endif
 {
     return true;
 }
