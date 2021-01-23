@@ -21,6 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include "sql_abstractions/sql_database_impl_sqlite.h"
 #include "sql_abstractions/sql_database_impl_pq.h"
 #include <locale>
+#include <unordered_map>
 namespace sql {
 static std::unordered_map<std::string, Database> databases;
 
