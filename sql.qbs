@@ -19,7 +19,8 @@ Export{
     cpp.includePaths: [product.sourceDirectory + "/include"]
     cpp.staticLibraries: {
         var libs = []
-        libs = ["pqxx", "pq"]
+        if(!qbs.toolchain.contains("msvc"))
+            libs = ["pqxx", "pq"]
         return libs
     }
 }
