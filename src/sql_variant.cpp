@@ -132,7 +132,7 @@ int Variant::toInt(bool* success) const{
                         *success = false;
                 }
                 else if constexpr (std::is_same_v<T, bool>){
-                    result = arg > 0;
+                    result = arg ? 1 : 0;
                 }
                 else if constexpr (std::is_same_v<T, QByteArray>){
                     if(success)
@@ -199,7 +199,7 @@ uint Variant::toUInt(bool *success) const
                         *success = false;
                 }
                 else if constexpr (std::is_same_v<T, bool>){
-                    result = arg > 0;
+                    result = arg ? 1 : 0;
                 }
                 else if constexpr (std::is_same_v<T, QByteArray>){
                     if(success)
@@ -258,7 +258,7 @@ uint64_t Variant::toUInt64(bool *success) const
                         *success = false;
                 }
                 else if constexpr (std::is_same_v<T, bool>){
-                    result = arg > 0;
+                    result = arg ? 1 : 0;
                 }
                 else if constexpr (std::is_same_v<T, QByteArray>){
                     if(success)
@@ -314,7 +314,7 @@ int64_t Variant::toInt64(bool *success) const
                         *success = false;
                 }
                 else if constexpr (std::is_same_v<T, bool>){
-                    result = arg > 0;
+                    result = arg ? 1 : 0;
                 }
                 else if constexpr (std::is_same_v<T, QByteArray>){
                     if(success)
@@ -582,3 +582,4 @@ QVariant Variant::toQVariant() const
 }
 
 }
+
