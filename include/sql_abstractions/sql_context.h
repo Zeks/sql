@@ -378,6 +378,48 @@ struct SqlContext
         } while(q.next());
     }
 
+
+    template <typename ValueType, typename ContainerType>
+    void FetchLargeSelectIntoContainer(std::string&& fieldName, std::string&& actualQuery, std::string&& countQuery = "", std::function<void(ContainerType&, const ValueType&)> compositor = {})
+    {
+        int size = 0;
+        if(!q.supportsImmediateResultSize()){
+            if(countQuery.length() == 0)
+                qs = "select count(*) from ( " + actualQuery + " ) as aliased_count ";
+            else
+                qs = countQuery;
+            Prepare(qs);
+            if(!ExecAndCheck())
+                return;
+
+
+            if(!CheckDataAvailability(true))
+                return;
+            size = q.value(0).toInt();
+            if(size == 0)
+                return;
+        }
+        //qDebug () << "query size: " << size;
+
+
+
+        qs = actualQuery;
+        Prepare(qs);
+        //BindValues();
+
+        if(!ExecAndCheck())
+            return;
+        if(q.supportsImmediateResultSize())
+            size = q.rowCount();
+        if(!CheckDataAvailability(true))
+            return;
+
+        result.data.reserve(size);
+        do{
+            compositor(result.data, q.value(fieldName.c_str()).template value<typename ResultType::value_type>());
+        } while(q.next());
+    }
+
     template <typename T>
     void FetchSingleValue(std::string&& valueName,
                           ResultType defaultValue,
