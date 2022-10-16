@@ -46,6 +46,21 @@ struct QueryImplPqImpl{
     pqxx::result resultSet;
     std::optional<pqxx::result::const_iterator> current_result_iterator;
     Error lastError;
+
+
+    void AssignNewResultSet(pqxx::result&& rs){
+        this->resultSet = std::move(rs);
+        this->current_result_iterator = {};
+    }
+    void AddBinding(QueryBinding&& binding){
+        auto oldBinding = std::find_if(bindings.begin(), bindings.end(), [&](const auto& b){
+            return b.key == binding.key;
+        });
+        if(oldBinding != std::end(bindings))
+            bindings.erase(oldBinding);
+         bindings.emplace_back(binding);
+    };
+
 };
 QueryImplPq::QueryImplPq() : d(new QueryImplPqImpl())
 {
@@ -101,13 +116,12 @@ void QueryImplPq::ReplaceNamedPlaceholders(std::string& statement)
 
 void QueryImplPq::ResetLocalData()
 {
+    d->AssignNewResultSet({});
     d->statement = {};
     d->bindings = {};
-    d->resultSet = {};
     d->lastError = {};
     d->uniqueQueryIdentifier = {};
     d->foundNamedPlaceholders = {};
-    d->current_result_iterator = {};
 }
 
 bool QueryImplPq::prepare(const std::string & statement, const std::string & name)
@@ -119,13 +133,21 @@ bool QueryImplPq::prepare(const std::string & statement, const std::string & nam
     if(d->foundNamedPlaceholders.size() > 0){
         ReplaceNamedPlaceholders(d->statement.editedStatement);
     }
-    else if(!NeedsPreparing(d->statement.editedStatement))
-        return true;
+//    else if(!NeedsPreparing(d->statement.editedStatement))
+//        return true;
     try {
+        // technically libpqxx allows preparing completely empty statments
+        // and that's a bit of a problem for consistency
+        if(d->statement.editedStatement.empty()){
+            d->lastError = Error("preparing of an empty statement makes no sense", ESqlErrors::se_generic_sql_error);
+            return false;
+        }
+
         if(name.empty())
             d->uniqueQueryIdentifier = QUuid::createUuid().toString().toStdString();
         else
             d->uniqueQueryIdentifier = name;
+
         d->database->getConnection()->prepare(*d->uniqueQueryIdentifier, d->statement.editedStatement);
     }  catch (const pqxx::failure& e) {
         d->lastError = Error(e.what(), ESqlErrors::se_generic_sql_error);
@@ -175,7 +197,7 @@ std::optional<std::string> VariantToOptionalString(const Variant& wrapper){
         default:
             throw std::logic_error("all indexes should be handled in pg driver: " + std::to_string(indexOfValue));
         }
-        qDebug() << "Passing converted variant to sql query: " << result.value_or("");
+        //qDebug() << "Passing converted variant to sql query: " << result.value_or("");
     }
     catch (const std::bad_variant_access& error){
         QLOG_INFO() << "error:" << error.what();
@@ -188,9 +210,9 @@ std::optional<std::string> VariantToOptionalString(const Variant& wrapper){
 bool QueryImplPq::exec()
 {
 
+
     auto transaction = d->database->getTransaction();
     bool ownTransaction = transaction.get() == nullptr;
-
 
     if(!d->database->transaction())
         return false;
@@ -209,9 +231,14 @@ bool QueryImplPq::exec()
         QLOG_ERROR() << e.what();
     };
 
+    // whatever we end up doing, we need to reset our result set iterator here
+    d->current_result_iterator = {};
     if(!d->uniqueQueryIdentifier.has_value()){
         try{
-            d->resultSet = transaction->exec(d->statement.editedStatement);
+            if(d->statement.editedStatement.empty())
+                return false;
+
+            d->AssignNewResultSet(transaction->exec(d->statement.editedStatement));
         }
         catch (const pqxx::failure& e) {
             onSqlError(e);
@@ -228,7 +255,7 @@ bool QueryImplPq::exec()
                     else
                     return VariantToOptionalString(v.value);
                 });
-                d->resultSet = transaction->exec_prepared(*d->uniqueQueryIdentifier, dynamicParams);
+                d->AssignNewResultSet(transaction->exec_prepared(*d->uniqueQueryIdentifier, dynamicParams));
             };
 
             // todo, this is temporary and needs to go once I am sure that all of the queries work
@@ -269,7 +296,7 @@ bool QueryImplPq::exec()
                 // it should't trigger in current code, but still...
                 fetchResultSet(d->bindings);
             }
-            d->database->getConnection()->unprepare(*d->uniqueQueryIdentifier);
+            //d->database->getConnection()->unprepare(*d->uniqueQueryIdentifier);
         }
         catch (const pqxx::failure& e) {
             try{
@@ -300,32 +327,32 @@ void QueryImplPq::bindVector(std::vector<QueryBinding> && vec)
 
 void QueryImplPq::bindValue(const std::string & name, const Variant & value)
 {
-    d->bindings.emplace_back(QueryBinding{name, value});
+    d->AddBinding(QueryBinding{name, value});
 }
 
 void QueryImplPq::bindValue(const std::string & name, Variant && value)
 {
-    d->bindings.emplace_back(QueryBinding{name, value});
+    d->AddBinding(QueryBinding{name, value});
 }
 
 void QueryImplPq::bindValue(std::string && name, const Variant & value)
 {
-    d->bindings.emplace_back(QueryBinding{name, value});
+    d->AddBinding(QueryBinding{name, value});
 }
 
 void QueryImplPq::bindValue(std::string && name, Variant && value)
 {
-    d->bindings.emplace_back(QueryBinding{name, value});
+    d->AddBinding(QueryBinding{name, value});
 }
 
 void QueryImplPq::bindValue(const QueryBinding & value)
 {
-    d->bindings.push_back(value);
+    d->AddBinding(QueryBinding{value});
 }
 
 void QueryImplPq::bindValue(QueryBinding && value)
 {
-    d->bindings.emplace_back(value);
+    d->AddBinding(QueryBinding{value});
 }
 
 bool QueryImplPq::next(bool warnOnEmpty)
@@ -338,6 +365,9 @@ bool QueryImplPq::next(bool warnOnEmpty)
     if(!d->current_result_iterator.has_value())
         d->current_result_iterator = d->resultSet.begin();
     else{
+        // we're not advancing past the size if we are already at the end
+        if(*d->current_result_iterator == d->resultSet.end())
+            return false;
         std::advance((*d->current_result_iterator),1);
         if(*d->current_result_iterator == d->resultSet.end())
         {
@@ -377,6 +407,10 @@ Variant FieldToVariant(const pqxx::row::reference& field){
             QLOG_INFO() << "Date is returned as: " << field.c_str();
             v = field.c_str();
             break; // timestamp, test format: 1999-01-08
+        case 1082:
+            //qDebug() << "Date is returned as: " << field.c_str();
+            v = field.c_str();
+            break; // time without time zone
         case 25:
         case 1114:
             v = field.c_str();

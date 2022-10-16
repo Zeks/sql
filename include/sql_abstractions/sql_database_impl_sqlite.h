@@ -26,6 +26,7 @@ class DatabaseImplSqlite : public DatabaseImplBase{
     public:
     DatabaseImplSqlite():DatabaseImplBase(){}
     static QSqlDatabase addDatabase(std::string, std::string = "");
+    static void removeDatabase(std::string);
     static QSqlDatabase database(std::string s = "");
     void setConnectionToken(ConnectionToken) override;
     bool open()override;

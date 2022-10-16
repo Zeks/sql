@@ -27,8 +27,6 @@ ESqlErrors SqliteErrorCodeToLocalErrorCode(int sqliteErrorCode){
     switch(sqliteErrorCode){
     case 19:
         return ESqlErrors::se_unique_row_violation;
-    case 1:
-        return ESqlErrors::se_duplicate_column;
     case 0:
         return ESqlErrors::se_none;
     default:
@@ -51,8 +49,12 @@ QueryImplSqlite::QueryImplSqlite(QSqlDatabase db):q(db)
 
 bool QueryImplSqlite::prepare(const std::string & sql)
 {
+    // I expect prepare to reinitialize the query like in  pg part
+    // what qt does makes no sense
+    q.clear();
     prepareErrorStorage = {};
     auto result = q.prepare(QString::fromStdString(sql));
+    auto code = q.lastError().nativeErrorCode();
     prepareErrorStorage = {q.lastError().text().toStdString(), SqliteErrorCodeToLocalErrorCode(q.lastError().nativeErrorCode().toInt())};
     return result;
 }

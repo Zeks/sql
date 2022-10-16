@@ -12,7 +12,6 @@ class QueryImplBase;
 
 class Query{
 public:
-
     Query(Database);
     Query(std::string, Database);
     ~Query();

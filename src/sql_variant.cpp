@@ -414,6 +414,7 @@ std::string Variant::toString() const
                     result = arg;
                 }
                 else if constexpr (std::is_same_v<T, QByteArray>){
+
                 }
                 else if constexpr (std::is_same_v<T, std::monostate>){
                 }
@@ -464,6 +465,11 @@ QDateTime Variant::toDateTime() const
 QDate Variant::toDate() const
 {
     return toDateTime().date();
+}
+
+QTime Variant::toTime() const
+{
+    return toDateTime().time();
 }
 
 bool Variant::toBool() const
@@ -574,6 +580,49 @@ QVariant Variant::toQVariant() const
                     result = arg;
                 }
                 else if constexpr (std::is_same_v<T, std::monostate>){
+                }
+                else
+                static_assert(always_false_v<T>, "non-exhaustive visitor!");
+    }, data);
+    return result;
+}
+
+bool Variant::isValid()
+{
+    bool result;
+    std::visit([&](const auto& arg) {
+                using T = std::decay_t<decltype(arg)>;
+
+                if constexpr (std::is_same_v<T, std::string>){
+                    result = true;
+                }
+                else if constexpr (std::is_same_v<T, uint>){
+                    result = true;
+                }
+                else if constexpr (std::is_same_v<T, int>){
+                    result = true;
+                }
+                else if constexpr (std::is_same_v<T, int64_t>){
+                    result = true;
+                }
+                else if constexpr (std::is_same_v<T, uint64_t>){
+                    result = true;
+                }
+                else if constexpr (std::is_same_v<T, double>){
+                    result = true;
+                }
+
+                else if constexpr (std::is_same_v<T, QDateTime>){
+                    result = true;
+                }
+                else if constexpr (std::is_same_v<T, bool>){
+                    result = true;
+                }
+                else if constexpr (std::is_same_v<T, QByteArray>){
+                    result = true;
+                }
+                else if constexpr (std::is_same_v<T, std::monostate>){
+                    result = false;
                 }
                 else
                 static_assert(always_false_v<T>, "non-exhaustive visitor!");

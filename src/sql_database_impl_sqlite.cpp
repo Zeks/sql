@@ -19,7 +19,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 QSqlDatabase sql::DatabaseImplSqlite::addDatabase(std::string type, std::string name)
 {
-   return QSqlDatabase::addDatabase(QString::fromStdString(type),QString::fromStdString(name)) ;
+    return QSqlDatabase::addDatabase(QString::fromStdString(type),QString::fromStdString(name)) ;
+}
+
+void sql::DatabaseImplSqlite::removeDatabase(std::string name)
+{
+    QSqlDatabase::removeDatabase(QString::fromStdString(name)) ;
 }
 
 QSqlDatabase sql::DatabaseImplSqlite::database(std::string name)
@@ -34,6 +39,8 @@ void sql::DatabaseImplSqlite::setConnectionToken(ConnectionToken token)
 
 bool sql::DatabaseImplSqlite::open()
 {
+    if(db.databaseName().isEmpty())
+        return false;
     return db.open();
 }
 

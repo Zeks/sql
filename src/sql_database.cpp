@@ -63,7 +63,18 @@ Database Database::addDatabase(std::string driver, std::string name)
 void Database::removeDatabase(std::string name)
 {
     toUpper(name);
-    databases.erase(name);
+    if(databases.count(name))
+    {
+        std::string driverType;{
+        auto& db = databases.at(name);
+        db.close();
+        driverType = db.driverType();
+        }
+        databases.erase(name);
+        if(driverType == "QSQLITE"){
+            DatabaseImplSqlite::removeDatabase(name);
+        }
+    }
 }
 
 Database Database::database(std::string name)

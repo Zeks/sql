@@ -49,6 +49,9 @@ void DatabaseImplPq::setConnectionToken(ConnectionToken token)
 bool DatabaseImplPq::open()
 {
     auto& token = d->token;
+    // if we haven't set the token, we obviously shouldn't even try
+    if(token.tokenType != "PQXX")
+        return false;
     auto uri = fmt::format("postgresql://{0}:{1}@{2}:{3}", token.user,token.password, token.ip, token.port);
     try {
         d->connection = std::shared_ptr<pqxx::connection>{new pqxx::connection(uri)};

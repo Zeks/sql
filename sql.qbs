@@ -67,11 +67,4 @@ files: [
         "src/sql_transaction.cpp",
         "src/sql_variant.cpp",
     ]
-//cpp.staticLibraries: {
-//        var libs = []
-//        libs = ["pqxx", "pq"]
-//        return libs
-//    }
-
-
 }

@@ -23,10 +23,10 @@ namespace sql{
 enum class ESqlErrors{
     se_generic_sql_error = -1,
     se_none = 0,
-    se_duplicate_column = 1,
     se_unique_row_violation = 2,
     se_no_data_to_be_fetched = 3,
     se_broken_connection = 4,
+    se_no_query_to_execute = 5,
 };
 
 class Error{
@@ -42,23 +42,42 @@ public:
     }
     // constructor for db specific errors like failure opening transaction
     Error(std::string str, ESqlErrors errorType){
+
         errorText = str;
         if(!errorText.empty())
             hasError = true;
         actualErrorType = errorType;
+        if(errorText.find("No query") != std::string::npos){
+            actualErrorType = ESqlErrors::se_no_query_to_execute;
+        }
+    }
+    static Error noError(){
+        Error error;
+        error.actualErrorType = ESqlErrors::se_none;
+        error.errorText = "";
+        error.queryText = "";
+        error.hasError = false;
+        return error;
     }
     std::string text() const{return errorText;};
     std::string query() const{return queryText;};
     bool isValid() const{return hasError;};
     ESqlErrors getActualErrorType() const{return actualErrorType;}
+    friend bool operator==(const Error& lhs, const Error& rhs);
 
 private:
     std::string errorText;
     std::string queryText;
-    ESqlErrors actualErrorType;
+    ESqlErrors actualErrorType = ESqlErrors::se_none;
     bool hasError = false;
 };
 
+inline bool operator==(const Error& lhs, const Error& rhs){
+    return lhs.actualErrorType == rhs.actualErrorType &&
+            lhs.errorText == rhs.errorText &&
+            lhs.queryText == rhs.queryText &&
+            lhs.hasError == rhs.hasError;
+}
 
 
 

@@ -67,9 +67,11 @@ public:
     float toFloat()  const;
     QDateTime toDateTime() const;
     QDate toDate() const;
+    QTime toTime() const;
     bool toBool() const;
     QByteArray toByteArray() const;
     QVariant toQVariant() const;
+    bool isValid();
 
     template <typename T>
     T value();
